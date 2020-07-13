@@ -13,45 +13,48 @@ class Mqtt():
         self.broker_adress = broker_adress # Адресс брокера в сети
         self.client_id = client_id
 
-        self.logger = logging.getLogger('CLIENT')
+        self.logger = logging.getLogger("MQTT")
+
+        if broker_adress == "":
+            self.logger.error("Broker adress is empty!")
+        if client_id == "":
+            self.logger.error("Client id is empty!")
+        self.logger = logging.getLogger("MQTT")
         # Инициализируем клиент
         self.client = paho_mqtt.Client(self.client_id)
 
         # Подключаемся к событиям клиента для отладки
-        self.client.on_connect = self.on_connect
-        self.client.on_disconnect = self.on_disconnect
-        self.client.on_publish = self.on_publish
+        self.client.on_log = self.log
 
 
     
     def connect(self):
         # Подключаемся к брокеру
-        self.logger.info("Connecting...")
         self.client.connect(self.broker_adress)
         self.client.loop_start()
-
-    def on_connect(self, client, userdata, flags, rc):
-        self.logger.info("Connected")
-
-
+        time.sleep(0.1)
 
     def disconnect(self):
         # Оключаемся от брокера
-        if self.client.is_connected() is True:
-            self.logger.info("Disconnecting...")
+        if self.client.is_connected():
             self.client.loop_stop()
             self.client.disconnect()
-
-    def on_disconnect(self, client, userdata, rc):
-        self.logger.info("Disconnected")
-
-    
+        else:
+            self.logger.warning("Connection is broken")
 
     def publish(self, topic, message):
         # Отправляем сообщение
-        if self.client.is_connected():
-            self.logger.info("Publishing{Topic: " + topic + ", Message: " + message + "}...")
-            self.client.publish(topic, message)
+        if (topic == ""):
+            self.logger.error("Topic is empty!")
+        if (message == ""):
+            self.logger.error("Message is empty!")
 
-    def on_publish(self, client, userdata, mid):
-        self.logger.info("Published")
+        # Если мы подключены, то отправляем сообщение
+        if self.client.is_connected():
+            self.client.publish(topic, message)
+        else:
+            self.logger.warning("Connection is broken")
+            
+
+    def log(self, client, userdata, level, buf):
+        self.logger.info(buf)
