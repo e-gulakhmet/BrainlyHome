@@ -1,14 +1,14 @@
+import PyQt5.QtCore
 import paho.mqtt.client as paho_mqtt
 import logging
 import time
 
 
 
-# TODO: Добавить проверку подключения перед исполнением функции
-
-
-
 class Mqtt():
+
+    S_callback = PyQt5.QtCore.pyqtSignal(str, str, name="callBack")
+
     def __init__(self, broker_adress, client_id):
         self.broker_adress = broker_adress # Адресс брокера в сети
         self.client_id = client_id
@@ -65,8 +65,7 @@ class Mqtt():
             self.logger.warning("Connection is broken")
 
     def callback(self, client, userdata, message):
-        data = {"topic": message.topic, "message": message.payload}
-        return data
+        self.S_callback.emit(str(message.topic), str(message.payload))
         
     def log(self, client, userdata, level, buf):
         self.logger.info(buf)
@@ -84,6 +83,12 @@ class Client():
     def get_id(self):
         return self.id
 
+    def set_kind(seld, kind):
+        if (kind == ""):
+            self.logger.error("Kind is empty")
+        else:
+            self.kind = kind
+
     def get_kind(self):
         return self.kind
 
@@ -93,14 +98,35 @@ class Client():
         else:
             self.name = name
         
-    def get_name(self, name):
+    def get_name(self):
         return self.name
 
 
 
 
 class MqttHelper():
-    def __init__(self, mqtt):
-        self.client = mqtt
-        self.relays = []
+    def __init__(self, mqtt_service):
+        self.mqtt = mqtt_service
+        self.clients = []
+        self.is_searching = True
+        self.mqtt.subscribe()
+        self.mqtt.S_callback.connect(self.on_message)
+        
+    def update(self):
+        # TODO: Добавить команду по которой будет производится поиск новых подключений
+        pass
 
+    def get_devices(self):
+        return self.clients
+    
+    def on_message(self, topic, message):
+        if topic == "home/id":
+            if message not in self.clients:
+                self.clients.append(Client(message, "", ""))
+                self.mqtt.subscribe("home/" + message + "/kind")
+                self.mqtt.subscribe("home/" + message + "/tx")
+                self.mqtt.subscribe("home/" + message + "/rx")
+
+        for i in rande(0, len(self.clients):
+            if topic == "home/" + self.clients[i].get_id() + "/kind":
+                self.clients.set_kind(message)
