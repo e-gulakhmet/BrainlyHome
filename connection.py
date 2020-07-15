@@ -108,25 +108,27 @@ class MqttHelper():
     def __init__(self, mqtt_service):
         self.mqtt = mqtt_service
         self.clients = []
-        self.is_searching = True
         self.mqtt.subscribe()
         self.mqtt.S_callback.connect(self.on_message)
-        
-    def update(self):
-        # TODO: Добавить команду по которой будет производится поиск новых подключений
-        pass
+
+
 
     def get_devices(self):
         return self.clients
     
     def on_message(self, topic, message):
         if topic == "home/id":
-            if message not in self.clients:
-                self.clients.append(Client(message, "", ""))
-                self.mqtt.subscribe("home/" + message + "/kind")
-                self.mqtt.subscribe("home/" + message + "/tx")
-                self.mqtt.subscribe("home/" + message + "/rx")
+            for client in self.clients:
+                if message == client.get_id():
+                    return
+            self.clients.append(Client(message, "", "Unknown"))
+            self.mqtt.subscribe("home/" + message + "/kind")
+            self.mqtt.subscribe("home/" + message + "/tx")
+            self.mqtt.subscribe("home/" + message + "/rx")
 
         for i in rande(0, len(self.clients):
             if topic == "home/" + self.clients[i].get_id() + "/kind":
-                self.clients.set_kind(message)
+                self.clients[i].set_kind(message)
+                break
+        
+        #TODO: Добавить функцию удаления клиента из списка доступных
