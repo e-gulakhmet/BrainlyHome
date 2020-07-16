@@ -64,7 +64,7 @@ class Mqtt():
         else:
             self.logger.warning("Connection is broken")
 
-    def callback(self, client, userdata, message):
+    def callback(self, client, userdata, message): # Функция, которая переотправляет сообщения в сигна
         self.S_callback.emit(str(message.topic), str(message.payload))
         
     def log(self, client, userdata, level, buf):
@@ -73,62 +73,105 @@ class Mqtt():
 
 
 class Client():
+    """
+
+    Класс клиента.
+
+    У каждого клиента(девайса) имеется:
+    номер(не изменяется),
+    тип(relay, button, ...)(изменяется, девайсом),
+    имя(изменяется пользователем).
+
+    """
+
     def __init__(self, id, kind, name):
         self.id = id
         self.kind = kind
         self.name = name
+        self.status = True
 
         self.logger = logging.getLogger("CLIENT")
     
-    def get_id(self):
+    def get_id(self): # Получить номер клиента
         return self.id
 
-    def set_kind(seld, kind):
+    def set_kind(seld, kind): # Изменить тип у клиента
         if (kind == ""):
             self.logger.error("Kind is empty")
         else:
             self.kind = kind
 
-    def get_kind(self):
+    def get_kind(self): # Получить тип клиента
         return self.kind
 
-    def set_name(self, name):
+    def set_name(self, name): # Изменить имя у клиента
         if (name == ""):
             self.logger.error("Name is empty")
         else:
             self.name = name
         
-    def get_name(self):
+    def get_name(self): # Получить имя клиента
         return self.name
-
+    
+    def set_status(self, status):
+        self.status = status
 
 
 
 class MqttHelper():
+    """
+
+    Класс вспомогательных функций для MQTT.
+    Здесь происходит поиск и инициализация новых клиентов.
+
+    При нахождении новых клиетов, задаем им номер и тип,
+    исходя из данный, которые они прислали.
+    Имя не указывается.
+
+    Если клиент не присылает сообщения в течении двух минут,
+    то указываем, что он отключен. Но не удаляем его.   
+
+    """
+
     def __init__(self, mqtt_service):
         self.mqtt = mqtt_service
         self.clients = []
-        self.mqtt.subscribe()
+        self.mqtt.subscribe("/home/id")
         self.mqtt.S_callback.connect(self.on_message)
+        self.new_client = True
 
 
 
-    def get_devices(self):
+    def get_devices(self): # Получить всех клиентов
         return self.clients
     
     def on_message(self, topic, message):
         if topic == "home/id":
+            # Проходимся по каждому из клиентов
             for client in self.clients:
+                # Если нашли одинаковые номера
+                # Говорим, что новый пользователь не добаляется
+                # и выходим из функции
                 if message == client.get_id():
+                    new_client = False
                     return
+            # Если совпадения не были найдены, 
+            # то добавляем нового клиента и подключаемся к его топикам
             self.clients.append(Client(message, "", "Unknown"))
             self.mqtt.subscribe("home/" + message + "/kind")
             self.mqtt.subscribe("home/" + message + "/tx")
             self.mqtt.subscribe("home/" + message + "/rx")
+        else:
+            new_client = False
 
-        for i in rande(0, len(self.clients):
-            if topic == "home/" + self.clients[i].get_id() + "/kind":
-                self.clients[i].set_kind(message)
-                break
-        
-        #TODO: Добавить функцию удаления клиента из списка доступных
+        # Если новый клиент был добавлен 
+        # и пришло сообщение на топик нового клиента
+        if (new_client and topic == "home/" self.clients[len(self.clients)].get_id() + "/kind":
+                    # Указываем тип для него
+                    self.clients[i].set_kind(message)
+                    return
+
+    def delete_device(self, id):
+        for i in range(0, len(self.clients)):
+            if (id == self.clients[i].get_id()):
+                self.clients.pop(i)
