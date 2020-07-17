@@ -5,11 +5,12 @@ import time
 
 
 
-class Mqtt():
+class Mqtt(PyQt5.QtCore.QObject):
 
     S_callback = PyQt5.QtCore.pyqtSignal(str, str, name="callBack")
 
     def __init__(self, broker_adress, client_id):
+        super().__init__()
         self.broker_adress = broker_adress # Адресс брокера в сети
         self.client_id = client_id
 
@@ -20,14 +21,13 @@ class Mqtt():
         if client_id == "":
             self.logger.error("Client id is empty!")
         self.logger = logging.getLogger("MQTT")
+
         # Инициализируем клиент
         self.client = paho_mqtt.Client(self.client_id)
-
         # Подключаемся к событиям клиента для отладки
         self.client.on_log = self.log
-
         # Подключаемся к сообщенияем, которые пришли от топиков, на которые мы подписаны
-        self.client.on_message = self.callback
+        self.client.on_message = self.on_message
 
 
     
@@ -63,9 +63,17 @@ class Mqtt():
             self.client.subscribe(topic)
         else:
             self.logger.warning("Connection is broken")
+        
+    def unsubscribe(self, topic):
+        if self.client.is_connected():
+            self.client.unsubscribe(topic)
+        else:
+            self.logger.warning("Connection is broken")
 
-    def callback(self, client, userdata, message): # Функция, которая переотправляет сообщения в сигна
+
+    def on_message(self, client, userdata, message): # Функция, которая переотправляет сообщения в сигна
         self.S_callback.emit(str(message.topic), str(message.payload))
+        self.logger.info("new message came: [" + str(message.topic) + "] " + str(message.payload))
         
     def log(self, client, userdata, level, buf):
         self.logger.info(buf)
@@ -95,8 +103,8 @@ class Client():
     def get_id(self): # Получить номер клиента
         return self.id
 
-    def set_kind(seld, kind): # Изменить тип у клиента
-        if (kind == ""):
+    def set_kind(self, kind): # Изменить тип у клиента
+        if kind == "":
             self.logger.error("Kind is empty")
         else:
             self.kind = kind
@@ -105,7 +113,7 @@ class Client():
         return self.kind
 
     def set_name(self, name): # Изменить имя у клиента
-        if (name == ""):
+        if name == "":
             self.logger.error("Name is empty")
         else:
             self.name = name
@@ -114,11 +122,14 @@ class Client():
         return self.name
     
     def set_status(self, status):
-        self.status = status
+        if status == "":
+            self.logger.error("Status is empty")
+        else:
+            self.status = status
 
 
 
-class MqttHelper():
+class MqttHelper(PyQt5.QtCore.QObject):
     """
 
     Класс вспомогательных функций для MQTT.
@@ -134,18 +145,21 @@ class MqttHelper():
     """
 
     def __init__(self, mqtt_service):
+        super().__init__()
         self.mqtt = mqtt_service
         self.clients = []
-        self.mqtt.subscribe("/home/id")
+        self.mqtt.subscribe("home/id")
         self.mqtt.S_callback.connect(self.on_message)
-        self.new_client = True
+        self.logger = logging.getLogger("MQTTHELPER")
 
 
 
     def get_devices(self): # Получить всех клиентов
+        self.logger.info(str(len(self.clients)) + " client connected")
         return self.clients
     
     def on_message(self, topic, message):
+        new_client = True
         if topic == "home/id":
             # Проходимся по каждому из клиентов
             for client in self.clients:
@@ -153,6 +167,7 @@ class MqttHelper():
                 # Говорим, что новый пользователь не добаляется
                 # и выходим из функции
                 if message == client.get_id():
+                    self.logger.info("Client is already connected")
                     new_client = False
                     return
             # Если совпадения не были найдены, 
@@ -161,17 +176,20 @@ class MqttHelper():
             self.mqtt.subscribe("home/" + message + "/kind")
             self.mqtt.subscribe("home/" + message + "/tx")
             self.mqtt.subscribe("home/" + message + "/rx")
+            self.logger.info("New client is added")
         else:
             new_client = False
 
         # Если новый клиент был добавлен 
         # и пришло сообщение на топик нового клиента
-        if (new_client and topic == "home/" self.clients[len(self.clients)].get_id() + "/kind":
-                    # Указываем тип для него
-                    self.clients[i].set_kind(message)
-                    return
+        if new_client and topic == "home/" + self.clients[len(self.clients)].get_id() + "/kind":
+            # Указываем тип для него
+            self.clients[len(self.clients)].set_kind(message)
+            self.logger.info("The type for the new client has been set")
+            return
 
     def delete_device(self, id):
         for i in range(0, len(self.clients)):
             if (id == self.clients[i].get_id()):
                 self.clients.pop(i)
+                self.logger.info("Client was deleted")
