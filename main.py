@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtCore import QTimer
 
 import connection
+import rooms
 
 
 
@@ -20,7 +21,7 @@ class MainWindow(QWidget) :
         # Устанавливаем размеры и расположение окна приложения
         self.setGeometry(200, 200, 400, 300)
         # Создание строки которое пишется в рамке приложения
-        self.setWindowTitle("CompAdmiss")
+        self.setWindowTitle("BrainlyHome")
     
         logging.basicConfig(filename="brainlyhome.log", level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 

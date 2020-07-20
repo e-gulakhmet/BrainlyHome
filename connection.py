@@ -182,10 +182,10 @@ class MqttHelper(PyQt5.QtCore.QObject):
 
         # Если новый клиент был добавлен 
         # и пришло сообщение на топик нового клиента
-        if new_client and topic == "home/" + self.clients[len(self.clients)].get_id() + "/kind":
+        if new_client and topic == "home/" + self.clients[len(self.clients) - 1].get_id() + "/kind":
             # Указываем тип для него
-            self.clients[len(self.clients)].set_kind(message)
-            self.logger.info("The type for the new client has been set")
+            self.clients[len(self.clients) - 1].set_kind(message)
+            self.logger.info("The type " + message + " for the new client has been set")
             return
 
     def delete_device(self, id):
