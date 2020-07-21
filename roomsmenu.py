@@ -9,11 +9,16 @@
 
 
 from PyQt5 import QtCore, QtWidgets
+import logging
 
 
 class RoomsMenu(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+
+        self.rooms = ["All", "MyRoom", "Kitchen", "New"]
+
+        self.logger = logging.getLogger("ROOMSMENU")
 
         self.setObjectName("RoomsWidget")
 
@@ -24,25 +29,25 @@ class RoomsMenu(QtWidgets.QWidget):
         self.setSizePolicy(sizePolicy)
 
         self.setStyleSheet("QLabel{\n"
-                                    "    font-size: 16px;\n"
-                                    "}\n"
-                                    "QLabel#mainLabel{\n"
-                                    "    font-size: 25px;\n"
-                                    "}\n"
-                                    "QComboBox{\n"
-                                    "    font-size: 20px\n"
-                                    "}\n"
-                                    "QLineEdit{\n"
-                                    "    font-size: 20px;\n"
-                                    "}\n"
-                                    "QPushButton{\n"
-                                    "    width: 70px;\n"
-                                    "    height: 70px;\n"
-                                    "    margin-right: 5px;\n"
-                                    "}\n"
-                                    "QFrame#clientFrame{\n"
-                                    "    border: 1px solid;\n"
-                                    "}")
+                            "    font-size: 16px;\n"
+                            "}\n"
+                            "QLabel#mainLabel{\n"
+                            "    font-size: 25px;\n"
+                            "}\n"
+                            "QComboBox{\n"
+                            "    font-size: 20px\n"
+                            "}\n"
+                            "QLineEdit{\n"
+                            "    font-size: 20px;\n"
+                            "}\n"
+                            "QPushButton{\n"
+                            "    width: 70px;\n"
+                            "    height: 70px;\n"
+                            "    margin-right: 5px;\n"
+                            "}\n"
+                            "QFrame#clientFrame{\n"
+                            "    border: 1px solid;\n"
+                            "}")
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
 
         # Название окна
@@ -79,6 +84,7 @@ class RoomsMenu(QtWidgets.QWidget):
         self.RoomsBox.setSizePolicy(sizePolicy)
         self.RoomsBox.setMaximumSize(QtCore.QSize(200, 100))
         self.RoomsBox.setObjectName("RoomsBox")
+        self.RoomsBox.addItems(self.rooms)
 
         # Простаранство для объекта выбора комнат
         self.RoomsLayout = QtWidgets.QHBoxLayout()
@@ -120,3 +126,17 @@ class RoomsMenu(QtWidgets.QWidget):
         self.setLayout(self.mainVLay)
         
         self.show()
+
+    
+    
+    def delete_room(self, room_name): # Удалить комнату по имени
+        try:
+            self.rooms.remove(room_name)
+        except ValueError:
+            self.logger.warning(room_name + " is missing from the list of rooms")
+    
+    def add_room(self, room_name): # Добавить комнату
+        if (room_name == ""):
+            self.logger.warning("room_name is empty")
+        else:
+            self.rooms.append(room_name)

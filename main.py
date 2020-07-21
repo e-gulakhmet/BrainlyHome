@@ -23,33 +23,34 @@ class MainWindow(QWidget) :
         # Создание строки которое пишется в рамке приложения
         self.setWindowTitle("BrainlyHome")
     
+        # Инициализируем logging
         logging.basicConfig(filename="brainlyhome.log", level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
+        # Подключаемся к mqtt серверу
         mqtt = connection.Mqtt("192.168.1.112", "base")
         mqtt.connect()
-        mqtt.publish("base/test", "hello world")
         
+        # Подключаемся к помошнику с дополнительными функциями для mqtt
         self.mqtt_helper = connection.MqttHelper(mqtt)
 
-
+        # Инициализируем виджет окна комнат и клиентов
         self.rm = roomsmenu.RoomsMenu()
-
-
-
+        
 
         self.mainVLay = QVBoxLayout()
         self.mainVLay.addWidget(self.rm)
 
         self.setLayout(self.mainVLay)
 
+        self.show()
 
         timer = QTimer(self)
         timer.setInterval(1000)
         timer.setSingleShot(False)
         timer.timeout.connect(self.get_name)
         timer.start(1000)
+    
 
-        self.show()
 
     def get_name(self):
         self.clients = self.mqtt_helper.get_devices()
