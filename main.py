@@ -1,10 +1,10 @@
 import logging
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout
 from PyQt5.QtCore import QTimer
 
 import connection
-import rooms
+import roomsmenu
 
 
 
@@ -30,6 +30,18 @@ class MainWindow(QWidget) :
         mqtt.publish("base/test", "hello world")
         
         self.mqtt_helper = connection.MqttHelper(mqtt)
+
+
+        self.rm = roomsmenu.RoomsMenu()
+
+
+
+
+        self.mainVLay = QVBoxLayout()
+        self.mainVLay.addWidget(self.rm)
+
+        self.setLayout(self.mainVLay)
+
 
         timer = QTimer(self)
         timer.setInterval(1000)
