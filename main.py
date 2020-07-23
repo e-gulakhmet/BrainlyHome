@@ -30,11 +30,10 @@ class MainWindow(QWidget) :
         mqtt = connection.Mqtt("192.168.1.112", "base")
         mqtt.connect()
         
-        # Подключаемся к помошнику с дополнительными функциями для mqtt
-        self.mqtt_helper = connection.MqttHelper(mqtt)
+
 
         # Инициализируем виджет окна комнат и клиентов
-        self.rm = roomsmenu.RoomsMenu()
+        self.rm = roomsmenu.RoomsMenu(mqtt)
         
 
         self.mainVLay = QVBoxLayout()
@@ -47,15 +46,8 @@ class MainWindow(QWidget) :
         timer = QTimer(self)
         timer.setInterval(1000)
         timer.setSingleShot(False)
-        timer.timeout.connect(self.get_name)
+        # timer.timeout.connect(self.get_name)
         timer.start(1000)
-    
-
-
-    def get_name(self):
-        self.clients = self.mqtt_helper.get_devices()
-        if len(self.clients) > 0:
-            print(self.clients[0].get_name())
 
 
 

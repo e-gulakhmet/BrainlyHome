@@ -3,6 +3,8 @@ import paho.mqtt.client as paho_mqtt
 import logging
 import time
 
+import home
+
 
 
 class Mqtt(PyQt5.QtCore.QObject):
@@ -80,55 +82,6 @@ class Mqtt(PyQt5.QtCore.QObject):
 
 
 
-class Client():
-    """
-
-    Класс клиента.
-
-    У каждого клиента(девайса) имеется:
-    номер(не изменяется),
-    тип(relay, button, ...)(изменяется, девайсом),
-    имя(изменяется пользователем).
-
-    """
-
-    def __init__(self, id, kind, name):
-        self.id = id
-        self.kind = kind
-        self.name = name
-        self.status = True
-
-        self.logger = logging.getLogger("CLIENT")
-    
-    def get_id(self): # Получить номер клиента
-        return self.id
-
-    def set_kind(self, kind): # Изменить тип у клиента
-        if kind == "":
-            self.logger.error("Kind is empty")
-        else:
-            self.kind = kind
-
-    def get_kind(self): # Получить тип клиента
-        return self.kind
-
-    def set_name(self, name): # Изменить имя у клиента
-        if name == "":
-            self.logger.error("Name is empty")
-        else:
-            self.name = name
-        
-    def get_name(self): # Получить имя клиента
-        return self.name
-    
-    def set_status(self, status):
-        if status == "":
-            self.logger.error("Status is empty")
-        else:
-            self.status = status
-
-
-
 class MqttHelper(PyQt5.QtCore.QObject):
     """
 
@@ -137,10 +90,6 @@ class MqttHelper(PyQt5.QtCore.QObject):
 
     При нахождении новых клиетов, задаем им номер и тип,
     исходя из данный, которые они прислали.
-    Имя не указывается.
-
-    Если клиент не присылает сообщения в течении двух минут,
-    то указываем, что он отключен. Но не удаляем его.   
 
     """
 
@@ -158,7 +107,7 @@ class MqttHelper(PyQt5.QtCore.QObject):
         self.logger.info(str(len(self.clients)) + " client connected")
         return self.clients
     
-    def on_message(self, topic, message):
+    def on_message(self, topic, message): # Функция нахождения новых клиентов
         new_client = True
         if topic == "home/id":
             # Проходимся по каждому из клиентов
@@ -172,11 +121,11 @@ class MqttHelper(PyQt5.QtCore.QObject):
                     return
             # Если совпадения не были найдены, 
             # то добавляем нового клиента и подключаемся к его топикам
-            self.clients.append(Client(message, "", "Unknown"))
+            self.clients.append(home.Client(message, ""))
             self.mqtt.subscribe("home/" + message + "/kind")
             self.mqtt.subscribe("home/" + message + "/tx")
             self.mqtt.subscribe("home/" + message + "/rx")
-            self.logger.info("New client is added")
+            self.logger.info("New client was found")
         else:
             new_client = False
 
@@ -188,7 +137,7 @@ class MqttHelper(PyQt5.QtCore.QObject):
             self.logger.info("The type " + message + " for the new client has been set")
             return
 
-    def delete_device(self, id):
+    def delete_device(self, id): # Удалить клиента
         for i in range(0, len(self.clients)):
             if (id == self.clients[i].get_id()):
                 self.clients.pop(i)

@@ -13,7 +13,7 @@ class Client():
 
     """
 
-    def __init__(self, id, kind, name, status=False, room=None):
+    def __init__(self, id, kind, name="Unknown", status=False, room=None):
         self.id = id
         self.kind = kind
         self.name = name
@@ -70,5 +70,6 @@ class Room():
     
     def get_clients(self):
         return self.clients
-
-
+    
+    def get_name(self):
+        return self.name
