@@ -26,6 +26,9 @@
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
+   <property name="topMargin">
+    <number>9</number>
+   </property>
    <item>
     <widget class="QFrame" name="clientFrame">
      <property name="sizePolicy">
@@ -41,10 +44,25 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_4">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>2</number>
+      </property>
+      <property name="rightMargin">
+       <number>5</number>
+      </property>
+      <property name="bottomMargin">
+       <number>2</number>
+      </property>
       <item>
        <layout class="QHBoxLayout" name="clientHBox">
         <item>
          <layout class="QVBoxLayout" name="infoVLay">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
           <item>
            <widget class="QLineEdit" name="nameLineEdit">
             <property name="text">

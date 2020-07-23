@@ -16,6 +16,7 @@ import logging
 
 import home
 import connection
+import client
 
 
 
@@ -23,7 +24,7 @@ class RoomsMenu(QWidget):
     def __init__(self, mqtt):
         super().__init__()
 
-        self.rooms = [home.Room("All"), home.Room("New")]
+        self.rooms = [home.Room("All"), home.Room("MyRoom")]
 
         self.logger = logging.getLogger("ROOMSMENU")
 
@@ -39,25 +40,25 @@ class RoomsMenu(QWidget):
         self.setSizePolicy(sizePolicy)
 
         self.setStyleSheet("QLabel{\n"
-                            "    font-size: 16px;\n"
-                            "}\n"
-                            "QLabel#mainLabel{\n"
-                            "    font-size: 25px;\n"
-                            "}\n"
-                            "QComboBox{\n"
-                            "    font-size: 20px\n"
-                            "}\n"
-                            "QLineEdit{\n"
-                            "    font-size: 20px;\n"
-                            "}\n"
-                            "QPushButton{\n"
-                            "    width: 70px;\n"
-                            "    height: 70px;\n"
-                            "    margin-right: 5px;\n"
-                            "}\n"
-                            "QFrame#clientFrame{\n"
-                            "    border: 1px solid;\n"
-                            "}")
+                           "    font-size: 16px;\n"
+                           "}\n"
+                           "QLabel#mainLabel{\n"
+                           "    font-size: 25px;\n"
+                           "}\n"
+                           "QComboBox{\n"
+                           "    font-size: 20px\n"
+                           "}\n"
+                           "QLineEdit{\n"
+                           "    font-size: 20px;\n"
+                           "}\n"
+                           "QPushButton{\n"
+                           "    width: 70px;\n"
+                           "    height: 70px;\n"
+                           "    margin-right: 5px;\n"
+                           "}\n"
+                           "QFrame#clientFrame{\n"
+                           "    border: 1px solid;\n"
+                           "}")
         spacerItem = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         # Название окна
@@ -96,6 +97,7 @@ class RoomsMenu(QWidget):
         self.RoomsBox.setObjectName("RoomsBox")
         for room in self.rooms:
             self.RoomsBox.addItem(room.get_name())
+        self.RoomsBox.currentIndexChanged.connect(self.update_room)
 
         # Простаранство для объекта выбора комнат
         RoomsLayout = QHBoxLayout()
@@ -108,9 +110,9 @@ class RoomsMenu(QWidget):
         self.scrollAreaWidgetContents_2 = QWidget()
         self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 764, 691))
         self.scrollAreaWidgetContents_2.setObjectName("scrollAreaWidgetContents_2")
-        self.verticalLayout_6 = QVBoxLayout(self.scrollAreaWidgetContents_2)
-        self.verticalLayout_6.setObjectName("verticalLayout_6")
-        self.verticalLayout_6.addItem(spacerItem2)
+        self.scrollAreaLayout = QVBoxLayout(self.scrollAreaWidgetContents_2)
+        self.scrollAreaLayout.setObjectName("scrollAreaLayout")
+        self.scrollAreaLayout.addItem(spacerItem2)
 
         self.RoomScrollArea = QScrollArea(self)
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -141,7 +143,7 @@ class RoomsMenu(QWidget):
         timer = QTimer(self)
         timer.setInterval(5000)
         timer.setSingleShot(False)
-        timer.timeout.connect(self.update_rooms)
+        # timer.timeout.connect(self.update_rooms)
         timer.start(5000)
 
 
@@ -159,8 +161,19 @@ class RoomsMenu(QWidget):
         self.rooms.append(room)
         self.logging.info("Room [" + room.get_name() + "] was added")
 
-    def update_rooms(self): # Поиска новых клиентов
-        self.clients = self.mqtt_helper.get_devices()
-        self.rooms[0].add_clients(self.clients)
-        self.rooms[1].add_clients(self.clients)
-        
+    def update_room(self, index):
+        if index == 0:
+            self.rooms[0].add_clients(self.mqtt_helper.get_devices())
+
+        layout = self.scrollAreaWidgetContents_2.layout()
+
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+        # for c in self.rooms[0].get_clients():
+            # self.scrollAreaLayout.removeWidget(client.ClientWidget(c))
+
+        for c in self.rooms[index].get_clients():
+            self.scrollAreaLayout.addWidget(client.ClientWidget(c))

@@ -63,7 +63,7 @@ class Room():
         self.clients = []
     
     def add_clients(self, clients):
-        self.clients.extend(clients)
+        self.clients = clients
 
     def add_client(self, client):
         self.clients.append(client)
