@@ -26,7 +26,7 @@ class MainWindow(QWidget) :
         # Устанавливаем иконку приложения
         # self.setWindowIcon(QIcon(os.path.join(os.getcwd(), args.path, "images/icon3.png")))
         # Устанавливаем размеры и расположение окна приложения
-        self.setGeometry(200, 200, 400, 300)
+        self.setGeometry(2000, 200, 800, 800)
         # Создание строки которое пишется в рамке приложения
         self.setWindowTitle("BrainlyHome")
     

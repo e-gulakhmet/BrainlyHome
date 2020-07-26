@@ -74,8 +74,9 @@ class Mqtt(PyQt5.QtCore.QObject):
 
 
     def on_message(self, client, userdata, message): # Функция, которая переотправляет сообщения в сигна
-        self.S_callback.emit(str(message.topic), str(message.payload))
-        self.logger.info("new message came: [" + str(message.topic) + "] " + str(message.payload))
+        payload = message.payload.decode("utf-8")
+        self.S_callback.emit(str(message.topic), payload)
+        self.logger.info("new message came: [" + str(message.topic) + "] " + payload)
         
     def log(self, client, userdata, level, buf):
         self.logger.info(buf)
@@ -97,10 +98,9 @@ class MqttHelper(PyQt5.QtCore.QObject):
         super().__init__()
         self.mqtt = mqtt_service
         self.clients = []
-        self.mqtt.subscribe("home/id")
+        self.mqtt.subscribe("home/client")
         self.mqtt.S_callback.connect(self.on_message)
         self.logger = logging.getLogger("MQTTHELPER")
-        self.new_client = False
 
 
 
@@ -108,8 +108,8 @@ class MqttHelper(PyQt5.QtCore.QObject):
         self.logger.info(str(len(self.clients)) + " client connected")
         return self.clients
     
-    def on_message(self, topic, message): # Функция нахождения новых клиентов
-        if topic == "home/id":
+    def on_message(self, topic, message: str): # Функция нахождения новых клиентов
+        if topic == "home/client":
             # Проходимся по каждому из клиентов
             for client in self.clients:
                 # Если нашли одинаковые номера
@@ -120,21 +120,14 @@ class MqttHelper(PyQt5.QtCore.QObject):
                     return
             # Если совпадения не были найдены, 
             # то добавляем нового клиента и подключаемся к его топикам
-            self.new_client = True
-            self.clients.append(home.Client(message, ""))
-            self.mqtt.subscribe("home/" + message + "/type")
-            self.mqtt.subscribe("home/" + message + "/tx")
-            self.mqtt.subscribe("home/" + message + "/rx")
-            self.logger.info("New client was found")
-
-        # Если новый клиент был добавлен 
-        # и пришло сообщение на топик нового клиента
-        if self.new_client and topic == "home/" + self.clients[len(self.clients) - 1].get_id() + "/type":
-            # Указываем тип для него
-            self.clients[len(self.clients) - 1].set_kind(message)
-            self.logger.info("The type " + message + " for the new client has been set")
-            self.new_client = False
-            return
+            # Разделяем сообщение по знаку ';',
+            # первым элементом будет id,
+            # вторым будет type(kind)
+            client_info = message.split(';')
+            self.clients.append(home.Client(client_info[0], client_info[1]))
+            self.mqtt.subscribe("home/" + client_info[0] + "/tx")
+            self.mqtt.subscribe("home/" + client_info[0] + "/rx")
+            self.logger.info("New client [" + client_info[0] + "] - " + client_info[1] + " was found")
 
     def delete_device(self, id): # Удалить клиента
         for i in range(0, len(self.clients)):
