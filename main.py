@@ -8,6 +8,13 @@ import roomsmenu
 
 
 
+# TODO: Добавить меню клиента
+# TODO: Сделать основное меню
+# TODO: Починить установку типа для клиента после подключения
+
+
+
+
 class MainWindow(QWidget) :
     
     def __init__(self) :

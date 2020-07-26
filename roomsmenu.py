@@ -148,7 +148,6 @@ class RoomsMenu(QWidget):
 
 
     
-    
     def delete_room(self, room): # Удалить комнату по имени
         try:
             self.RoomsBox.removeItem(self.rooms.index(room))
@@ -161,12 +160,14 @@ class RoomsMenu(QWidget):
         self.rooms.append(room)
         self.logging.info("Room [" + room.get_name() + "] was added")
 
-    def update_room(self, index):
-        if index == 0:
-            self.rooms[0].add_clients(self.mqtt_helper.get_devices())
+    def update_room(self, index): # Обновить окно комнат
+        if index == 0: # Если выбрана комната со всеми клиентами
+            # Ищем новых клиентов
+            self.rooms[0].add_clients(self.mqtt_helper.get_devices()) 
 
+        # Удаляем всех клиентов из виджета комнаты,
+        # чтобы потом загрузить клиентов из выбранной комнаты
         layout = self.scrollAreaWidgetContents_2.layout()
-
         while layout.count():
             child = layout.takeAt(0)
             if child.widget():
@@ -175,5 +176,6 @@ class RoomsMenu(QWidget):
         # for c in self.rooms[0].get_clients():
             # self.scrollAreaLayout.removeWidget(client.ClientWidget(c))
 
+        # Добавляем клиентов из выбранной комнаты в виджет комнаты
         for c in self.rooms[index].get_clients():
             self.scrollAreaLayout.addWidget(client.ClientWidget(c))
