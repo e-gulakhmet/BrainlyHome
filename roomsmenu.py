@@ -152,18 +152,26 @@ class RoomsMenu(QWidget):
         # Список комнат с возможностью выбора комнаты
         self.RoomsBox = QComboBox(self)
         self.RoomsBox.setEnabled(True)
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        self.RoomsBox.setSizePolicy(sizePolicy)
-        self.RoomsBox.setMaximumSize(QSize(200, 100))
+        self.RoomsBox.setFixedWidth(200)
         self.RoomsBox.setObjectName("RoomsBox")
         for room in self.home.get_rooms():
             self.RoomsBox.addItem(room.get_name())
         self.RoomsBox.currentIndexChanged.connect(self.update_room)
 
+        # Кнопка добавление новой комнаты
+        self.addRoomButton = QPushButton()
+        self.addRoomButton.setText("Add")
+        self.addRoomButton.setFixedSize(60, 32)
+        self.addRoomButton.setObjectName("addRoomButton")
+        self.addRoomButton.clicked.connect(self.add_room)
+
         # Простаранство для объекта выбора комнат
-        RoomsLayout = QHBoxLayout()
-        RoomsLayout.setObjectName("RoomsLayout")
-        RoomsLayout.addWidget(self.RoomsBox)
+        roomsHLay = QHBoxLayout()
+        roomsHLay.setObjectName("roomsHLay")
+        roomsHLay.addStretch()
+        roomsHLay.addWidget(self.RoomsBox)
+        roomsHLay.addWidget(self.addRoomButton)
+        roomsHLay.addStretch()
 
         # Пространство клиентов и возможностью прокрутки
         self.scrollAreaWidgetContents_2 = QWidget()
@@ -188,7 +196,7 @@ class RoomsMenu(QWidget):
         self.mainVLay.setObjectName("mainVLay")
         self.mainVLay.addLayout(labelHLay)
         self.mainVLay.addWidget(line)
-        self.mainVLay.addLayout(RoomsLayout)
+        self.mainVLay.addLayout(roomsHLay)
         self.mainVLay.addWidget(self.RoomScrollArea)
 
         self.setLayout(self.mainVLay)
