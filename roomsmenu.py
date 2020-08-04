@@ -89,10 +89,9 @@ class ClientWidget(QFrame):
 class RoomsMenu(QWidget):
     def __init__(self, mqtt):
         super().__init__()
-
-        self.rooms = [home.Room("All"), home.Room("MyRoom")]
-
         self.logger = logging.getLogger("ROOMSMENU")
+
+        self.home = home.Home()
 
         # Подключаемся к помошнику с дополнительными функциями для mqtt
         self.mqtt_helper = connection.MqttHelper(mqtt)
@@ -155,7 +154,7 @@ class RoomsMenu(QWidget):
         self.RoomsBox.setSizePolicy(sizePolicy)
         self.RoomsBox.setMaximumSize(QSize(200, 100))
         self.RoomsBox.setObjectName("RoomsBox")
-        for room in self.rooms:
+        for room in self.home.get_rooms():
             self.RoomsBox.addItem(room.get_name())
         self.RoomsBox.currentIndexChanged.connect(self.update_room)
 
@@ -205,13 +204,13 @@ class RoomsMenu(QWidget):
     def delete_room(self, room): # Удалить комнату по имени
         try:
             self.RoomsBox.removeItem(self.rooms.index(room))
-            self.rooms.remove(room)
+            self.home.remove_room(room)
             self.logger.info("Room [" + room.get_name() + "] was deleted")
         except ValueError:
             self.logger.warning(room.get_name() + " is missing from the list of rooms")
     
     def add_room(self, room): # Добавить комнату
-        self.rooms.append(room)
+        self.home.add_room(room)
         self.logging.info("Room [" + room.get_name() + "] was added")
 
     def update_room(self, index): # Обновить окно комнат

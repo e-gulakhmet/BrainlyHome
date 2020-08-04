@@ -44,12 +44,14 @@ class Client():
 
     def set_room(self, room):
         self.room = room
+        self.room.add_client(self)
+
+    def remove_room(self):
+        self.room.remove_client(self)
+        self.room = None
 
     def get_room(self):
         return self.room
-
-    def add_friends(self, friends):
-        self.friends.extend(friends)
     
     def add_friend(self, friend):
         self.friends.append(friend)
@@ -68,8 +70,51 @@ class Room():
     def add_client(self, client):
         self.clients.append(client)
     
+    def remove_client(self, client):
+        self.clients.remove(client)
+    
     def get_clients(self):
         return self.clients
     
     def get_name(self):
         return self.name
+
+
+
+
+class Home():
+    def __init__(self):
+        self.rooms = [Room("All")]
+    
+    def add_room(self, room):
+        self.rooms.append(room)
+    
+    def remove_room(self, room): # Удалить комнату
+        # Получаем комнату, которую надо удалить
+        r = self.rooms[self.rooms.index(room)]
+        # Говорим клиентам, которые подключены к этой комнате,
+        # что они к ней больше не подключены
+        for c in r.get_clients():
+            c.remove_room()
+        # Удаляем комнату
+        self.rooms.remove(room)
+    
+    def remove_room_by_index(self, index):
+        r = self.rooms[index]
+        for c in r.get_clients():
+            c.remove_room()
+        self.rooms.remove(index)
+    
+    def remove_room_by_name(self, name):
+        for r in self.rooms:
+            if r.get_name() == name:
+                for c in r.get_clients():
+                    c.remove_room()
+                self.rooms.remove(r)
+                return
+    
+    def get_room(self, index):
+        return self.rooms[index]
+
+    def get_rooms(self):
+        return self.rooms

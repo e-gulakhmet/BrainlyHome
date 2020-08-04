@@ -91,7 +91,7 @@ class MqttHelper(PyQt5.QtCore.QObject):
     проверка их подключения.
 
     При нахождении нового клиента, отправляем
-    сигнал новым клиентом. Затем говорим
+    сигнал с новым клиентом. Затем говорим
     новому модулю, что он подключен.
     В сообщении топика [home/client] содержится
     id, тип модуля(id;type).
@@ -107,43 +107,26 @@ class MqttHelper(PyQt5.QtCore.QObject):
 
     """
 
+    S_new_client = PyQt5.QtCore.pyqtSignal(home.Client, name="newClient")
+
     def __init__(self, mqtt_service):
         super().__init__()
         self.mqtt = mqtt_service
-        self.clients = []
         self.mqtt.subscribe("home/client")
         self.mqtt.S_callback.connect(self.on_message)
         self.logger = logging.getLogger("MQTTHELPER")
-
-
-
-    def get_devices(self): # Получить всех клиентов
-        self.logger.info(str(len(self.clients)) + " client connected")
-        return self.clients
     
     def on_message(self, topic, message: str): # Функция нахождения новых клиентов
         if topic == "home/client":
-            # Проходимся по каждому из клиентов
-            for client in self.clients:
-                # Если нашли одинаковые номера
-                # Говорим, что новый пользователь не добаляется
-                # и выходим из функции
-                if message == client.get_id():
-                    self.logger.info("Client is already connected")
-                    return
-            # Если совпадения не были найдены, 
-            # то добавляем нового клиента и подключаемся к его топикам
-            # Разделяем сообщение по знаку ';',
-            # первым элементом будет id,
-            # вторым будет type(kind)
+            # Разделяем сообщение по знаку ';'
             client_info = message.split(';')
-            self.clients.append(home.Client(client_info[0], client_info[1]))
+            # первый элементом id,
+            # второй type(kind)
             self.mqtt.subscribe("home/" + client_info[0] + "/tx")
             self.mqtt.subscribe("home/" + client_info[0] + "/rx")
+            # Говорим клиенту, что он подключен
+            self.mqtt.publish("home/" + client_info[0] + "/tx", "connected")
+            # Отправляем сигнал с новым клиентом и подключаемся к его топикам
+            client = home.Client(client_info[0], client_info[1])
+            self.S_new_client.emit(client)
             self.logger.info("New client [" + client_info[0] + "] - " + client_info[1] + " was found")
-
-    def delete_device(self, id): # Удалить клиента
-        for i in range(0, len(self.clients)):
-            if (id == self.clients[i].get_id()):
-                self.clients.pop(i)
-                self.logger.info("Client was deleted")
