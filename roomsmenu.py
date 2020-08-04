@@ -96,6 +96,8 @@ class RoomsMenu(QWidget):
         # Подключаемся к помошнику с дополнительными функциями для mqtt
         self.mqtt_helper = connection.MqttHelper(mqtt)
 
+        self.mqtt_helper.S_new_client.connect(self.add_new_client)
+
         self.setObjectName("RoomsWidget")
 
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
@@ -213,13 +215,15 @@ class RoomsMenu(QWidget):
         self.home.add_room(room)
         self.logging.info("Room [" + room.get_name() + "] was added")
 
-    def update_room(self, index): # Обновить окно комнат
-        if index == 0: # Если выбрана комната со всеми клиентами
-            # Ищем новых клиентов
-            self.rooms[0].add_clients(self.mqtt_helper.get_devices()) 
+    def add_new_client(self, client):
+        # Добавляем нового клиента в комнату ALL
+        self.home.get_room(0).add_client(client)
+        if self.RoomsBox.currentIndex() == 0:
+            self.update_room(0)
 
+    def update_room(self, index): # Обновить окно комнат
         # Удаляем всех клиентов из виджета комнаты,
-        # чтобы потом загрузить клиентов из выбранной комнаты
+        # чтобы загрузить клиентов из выбранной комнаты
         layout = self.scrollAreaWidgetContents_2.layout()
         while layout.count():
             child = layout.takeAt(0)
@@ -227,7 +231,7 @@ class RoomsMenu(QWidget):
                 child.widget().deleteLater()
 
         # Добавляем клиентов из выбранной комнаты в виджет комнаты
-        for c in self.rooms[index].get_clients():
+        for c in self.home.get_room(index).get_clients():
             self.scrollAreaLayout.addWidget(ClientWidget(c))
         
         self.scrollAreaLayout.addStretch(1)
