@@ -7,6 +7,7 @@ import logging
 
 import home
 import connection
+import new_room_menu
 
 
 
@@ -163,7 +164,7 @@ class RoomsMenu(QWidget):
         self.addRoomButton.setText("Add")
         self.addRoomButton.setFixedSize(60, 32)
         self.addRoomButton.setObjectName("addRoomButton")
-        self.addRoomButton.clicked.connect(self.add_room)
+        self.addRoomButton.clicked.connect(self.new_room)
 
         # Простаранство для объекта выбора комнат
         roomsHLay = QHBoxLayout()
@@ -209,6 +210,10 @@ class RoomsMenu(QWidget):
         # timer.timeout.connect(self.update_rooms)
         timer.start(5000)
 
+    def new_room(self):
+        self.logger.info("New room menu is openning...")
+        self.nrm = new_room_menu.NewRoomMenu()
+        self.nrm.S_new_room.connect(self.add_room)
 
     
     def delete_room(self, room): # Удалить комнату по имени
@@ -219,9 +224,11 @@ class RoomsMenu(QWidget):
         except ValueError:
             self.logger.warning(room.get_name() + " is missing from the list of rooms")
     
-    def add_room(self, room): # Добавить комнату
+    def add_room(self, name): # Добавить комнату
+        room = home.Room(name)
         self.home.add_room(room)
-        self.logger.info("Room [" + room.get_name() + "] was added")
+        self.RoomsBox.addItem(name)
+        self.logger.info("Room [" + name + "] was added")
 
     def add_new_client(self, client):
         # Добавляем нового клиента в комнату ALL
