@@ -18,7 +18,7 @@ class Client():
         self.kind = kind
         self.name = name
         self.status = status
-        self.room = room
+        self.room = [room]
         self.friends = []
     
     def get_id(self): # Получить номер клиента
@@ -43,18 +43,21 @@ class Client():
         return self.status
 
     def set_room(self, room):
-        self.room = room
+        self.room[0] = room
         self.room.add_client(self)
 
     def remove_room(self):
         self.room.remove_client(self)
-        self.room = None
+        self.room.clear()
 
     def get_room(self):
-        return self.room
+        return self.room[0]
     
     def add_friend(self, friend):
         self.friends.append(friend)
+    
+    def remove_friends(self, friend):
+        self.friends.remove(self.friends.index(friend))
     
 
     

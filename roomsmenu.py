@@ -221,7 +221,7 @@ class RoomsMenu(QWidget):
     
     def add_room(self, room): # Добавить комнату
         self.home.add_room(room)
-        self.logging.info("Room [" + room.get_name() + "] was added")
+        self.logger.info("Room [" + room.get_name() + "] was added")
 
     def add_new_client(self, client):
         # Добавляем нового клиента в комнату ALL

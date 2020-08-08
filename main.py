@@ -1,5 +1,5 @@
-import logging
 import sys
+import logging
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout
 from PyQt5.QtCore import QTimer
 
@@ -11,6 +11,9 @@ import roomsmenu
 # TODO: Добавить меню клиента
 # TODO: Сделать основное меню
 # TODO: Сделать добавление новой комнаты
+# TODO: Добавить проверку подключения клиетов
+# TODO: Добавить сохранение информации о модулях в память
+# TODO: Добавить инициализацию сохраненных клиетов после перезагрузки
 
 
 
