@@ -7,7 +7,7 @@ import logging
 
 import home
 import connection
-import new_room_menu
+import newroommenu
 
 
 
@@ -212,7 +212,7 @@ class RoomsMenu(QWidget):
 
     def new_room(self):
         self.logger.info("New room menu is openning...")
-        self.nrm = new_room_menu.NewRoomMenu()
+        self.nrm = newroommenu.NewRoomMenu()
         self.nrm.S_new_room.connect(self.add_room)
 
     
